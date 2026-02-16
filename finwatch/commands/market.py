@@ -1,11 +1,14 @@
 from typing import Annotated
 
 import typer
+from rich.console import Console
+from rich.table import Table
 
-from finwatch.external import finnhub
 from finwatch.models import ExchangeCode
+from finwatch.services import stock_service
 
 app = typer.Typer()
+console = Console()
 
 
 @app.command()
@@ -25,7 +28,11 @@ def search(
     Search for symbols by NAME, optionally use --exchange to specify an exchange.
     Support for NYSE, TSX, and BVC.
     """
-    print(finnhub.lookup_for_symbols(name, exchange))
+    response = stock_service.get_stocks_by_name(name, exchange)
+    table = Table("Name", "Symbol", "Type", title="Symbols found!")
+    for symbol in response.symbols:
+        table.add_row(symbol.name, symbol.symbol, symbol.type)
+    console.print(table)
 
 
 @app.command()
@@ -33,4 +40,4 @@ def watch(symbol: Annotated[str, typer.Argument(help="Name of the symbol to quer
     """
     Look up the price and fundamentals
     """
-    print(finnhub.get_symbol_quote(symbol))
+    pass

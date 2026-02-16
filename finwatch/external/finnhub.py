@@ -1,11 +1,13 @@
 from typing import Any
 
 import httpx
+from tenacity import retry, wait_exponential
 
 from finwatch.config import settings
 from finwatch.models import ExchangeCode
 
 
+@retry(wait=wait_exponential(multiplier=1, min=4, max=10))
 def _get_finnhub_request(*, endpoint: str, params: dict[str, Any]) -> Any:
     with httpx.Client(
         base_url=settings.FINNHUB_API_URL,
