@@ -28,8 +28,9 @@ def search(
     print(finnhub.lookup_for_symbols(name, exchange))
 
 
-def watch():
+@app.command()
+def watch(symbol: Annotated[str, typer.Argument(help="Name of the symbol to query.")]):
     """
-    Add a symbol into your portofolio to start tracking it.
+    Look up the price and fundamentals
     """
-    pass
+    print(finnhub.get_symbol_quote(symbol))
