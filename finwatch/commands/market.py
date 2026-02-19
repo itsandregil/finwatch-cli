@@ -2,7 +2,6 @@ from typing import Annotated
 
 import typer
 from rich.console import Console
-from rich.table import Table
 
 from finwatch.external import finnhub
 from finwatch.models import ExchangeCode
@@ -30,8 +29,7 @@ def search(
     Support for NYSE, TSX, and BVC.
     """
     symbols = finnhub.lookup_for_symbols(query=name, exchange=exchange)
-    table = Table("Name", "Symbol", "Type")
-    render_lookup_symbols(table, console, symbols)
+    render_lookup_symbols(symbols)
 
 
 @app.command()
@@ -42,13 +40,4 @@ def watch(
     Look up the latest price of a stock.
     """
     quote = finnhub.get_symbol_quote(ticker_symbol=ticker_symbol)
-    table = Table(
-        "Ticker Symbol",
-        "Current Price",
-        "High",
-        "Low",
-        "Open",
-        "% Change",
-        "Time",
-    )
-    render_quote(table, console, ticker_symbol, quote)
+    render_quote(ticker_symbol, quote)
