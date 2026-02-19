@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Annotated
 
@@ -21,14 +22,15 @@ class FinnhubBaseModel(BaseModel):
 
 class LookupSymbol(FinnhubBaseModel):
     name: str = Field(validation_alias="description")
-    symbol: str
+    ticker_symbol: str = Field(validation_alias="symbol")
     type: LowerString
 
 
-class SymbolLookupResponse(FinnhubBaseModel):
-    count: int
-    symbols: list[LookupSymbol] = Field(validation_alias="result")
-
-
-class QuoteResponse(FinnhubBaseModel):
-    pass
+class Quote(FinnhubBaseModel):
+    current_price: float = Field(validation_alias="c")
+    high_price: float = Field(validation_alias="h")
+    low_price: float = Field(validation_alias="l")
+    open_price: float = Field(validation_alias="o")
+    change: float = Field(validation_alias="d")
+    percent_change: float = Field(validation_alias="pc")
+    time: datetime = Field(validation_alias="t")
