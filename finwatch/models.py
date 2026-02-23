@@ -34,3 +34,9 @@ class Quote(FinnhubBaseModel):
     change: float = Field(validation_alias="d")
     percent_change: float = Field(validation_alias="pc")
     time: datetime = Field(validation_alias="t")
+
+
+class Trade(FinnhubBaseModel):
+    symbol: str = Field(validation_alias="s")
+    last_price: float = Field(validation_alias="p")
+    time: datetime = Field(validation_alias="t")

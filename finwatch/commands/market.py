@@ -1,14 +1,13 @@
+import asyncio
 from typing import Annotated
 
 import typer
-from rich.console import Console
 
 from finwatch.external import finnhub
 from finwatch.models import ExchangeCode
 from finwatch.ui import render_lookup_symbols, render_quote
 
 app = typer.Typer()
-console = Console()
 
 
 @app.command()
@@ -36,8 +35,19 @@ def search(
 def watch(
     ticker_symbol: Annotated[str, typer.Argument(help="Name of the symbol to query.")],
 ):
-    """
-    Look up the latest price of a stock.
-    """
+    """Look up the latest price of a stock."""
     quote = finnhub.get_symbol_quote(ticker_symbol=ticker_symbol)
     render_quote(ticker_symbol, quote)
+
+
+@app.command()
+def stream(
+    symbol: Annotated[
+        str, typer.Argument(help="Ticker symbol of the stock to watch in real-time.")
+    ],
+):
+    """Watch a list of stocks moving in real time."""
+    try:
+        asyncio.run(finnhub.get_trades_with_ws(ticker_symbol=symbol))
+    except KeyboardInterrupt:
+        print("Stopped Streaming")
