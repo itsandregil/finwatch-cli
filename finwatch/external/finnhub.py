@@ -5,7 +5,7 @@ import websockets
 from httpx import Client
 
 from finwatch.config import settings
-from finwatch.models import ExchangeCode, LookupSymbol, Quote
+from finwatch.models import ExchangeCode, LookupSymbol, MarketStatus, Quote
 
 # TODO: Handle validation and request errors properly
 # TODO: Cache requests that do not change in result
@@ -19,6 +19,14 @@ def _get_finnhub_request(*, endpoint: str, params: dict[str, Any]) -> dict[str, 
     ) as client:
         response = client.get(url=endpoint, params=params)
     return response.json()
+
+
+def get_market_status(*, exchange: ExchangeCode) -> MarketStatus:
+    data = _get_finnhub_request(
+        endpoint="/stock/market-status",
+        params={"exchange": exchange.name},
+    )
+    return MarketStatus.model_validate(data)
 
 
 def lookup_for_symbols(*, query: str, exchange: ExchangeCode) -> list[LookupSymbol]:
@@ -44,7 +52,8 @@ async def get_trades_with_ws(*, ticker_symbol: str):
         await ws.send(json.dumps(message))
 
         try:
-            async for message in ws:
+            while True:
+                message = await ws.recv()
                 data = json.loads(message)
                 print(data)
         except websockets.ConnectionClosed:

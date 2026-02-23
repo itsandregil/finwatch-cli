@@ -5,9 +5,19 @@ import typer
 
 from finwatch.external import finnhub
 from finwatch.models import ExchangeCode
-from finwatch.ui import render_lookup_symbols, render_quote
+from finwatch.ui import render_lookup_symbols, render_quote, render_status
 
 app = typer.Typer()
+
+
+@app.command()
+def status(
+    exchange: Annotated[
+        ExchangeCode, typer.Option(help="Exchange to get the status of")
+    ] = ExchangeCode.US,
+):
+    status = finnhub.get_market_status(exchange=exchange)
+    render_status(status)
 
 
 @app.command()
@@ -50,4 +60,4 @@ def stream(
     try:
         asyncio.run(finnhub.get_trades_with_ws(ticker_symbol=symbol))
     except KeyboardInterrupt:
-        print("Stopped Streaming")
+        print("\nStopped Streaming")

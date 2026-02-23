@@ -4,7 +4,7 @@ from typing import Any
 from rich.console import Console
 from rich.table import Table
 
-from finwatch.models import LookupSymbol, Quote
+from finwatch.models import LookupSymbol, MarketStatus, Quote
 
 ModelDump = dict[str, Any]
 
@@ -23,10 +23,10 @@ def _print_table(table: Table) -> None:
     console.print(table)
 
 
-def _get_renderable_data(dump: ModelDump):
+def _get_renderable_data(dump: ModelDump, keep_time: bool = True):
     renderable_data = {}
     for att, value in dump.items():
-        if isinstance(value, datetime):
+        if isinstance(value, datetime) and keep_time:
             renderable_data[att] = str(value.date())
             continue
         renderable_data[att] = str(value)
@@ -52,5 +52,13 @@ def render_quote(
     data = quote.model_dump(exclude={"percent_change"})
     table = _get_table_header(data, title=f"Quote for {symbol}")
     renderables = _get_renderable_data(data)
+    table.add_row(*renderables)
+    _print_table(table)
+
+
+def render_status(status: MarketStatus) -> None:
+    data = status.model_dump()
+    table = _get_table_header(data)
+    renderables = _get_renderable_data(data, keep_time=False)
     table.add_row(*renderables)
     _print_table(table)

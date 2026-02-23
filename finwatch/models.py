@@ -40,3 +40,12 @@ class Trade(FinnhubBaseModel):
     symbol: str = Field(validation_alias="s")
     last_price: float = Field(validation_alias="p")
     time: datetime = Field(validation_alias="t")
+
+
+class MarketStatus(FinnhubBaseModel):
+    model_config = {"extra": "ignore"}
+
+    exchange: str
+    is_open: bool = Field(validation_alias="isOpen")
+    session: str
+    time: datetime = Field(validation_alias="t")
