@@ -52,12 +52,13 @@ def watch(
 
 @app.command()
 def stream(
-    symbol: Annotated[
-        str, typer.Argument(help="Ticker symbol of the stock to watch in real-time.")
+    symbols: Annotated[
+        list[str],
+        typer.Argument(help="Ticker symbol of the stock to watch in real-time."),
     ],
 ):
     """Watch a list of stocks moving in real time."""
     try:
-        asyncio.run(finnhub.get_trades_with_ws(ticker_symbol=symbol))
+        asyncio.run(finnhub.get_trades_with_ws(symbols=symbols))
     except KeyboardInterrupt:
         print("\nStopped Streaming")

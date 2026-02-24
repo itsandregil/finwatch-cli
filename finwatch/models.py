@@ -17,7 +17,7 @@ LowerString = Annotated[str, PlainSerializer(lambda s: s.lower())]
 
 
 class FinnhubBaseModel(BaseModel):
-    model_config = {"validate_by_alias": True}
+    model_config = {"validate_by_alias": True, "extra": "ignore"}
 
 
 class LookupSymbol(FinnhubBaseModel):
@@ -36,16 +36,23 @@ class Quote(FinnhubBaseModel):
     time: datetime = Field(validation_alias="t")
 
 
-class Trade(FinnhubBaseModel):
-    symbol: str = Field(validation_alias="s")
-    last_price: float = Field(validation_alias="p")
-    time: datetime = Field(validation_alias="t")
-
-
 class MarketStatus(FinnhubBaseModel):
-    model_config = {"extra": "ignore"}
-
     exchange: str
     is_open: bool = Field(validation_alias="isOpen")
     session: str
     time: datetime = Field(validation_alias="t")
+
+
+class Trade(FinnhubBaseModel):
+    symbol: str = Field(validation_alias="s")
+    last_price: float = Field(validation_alias="p")
+    volume: int = Field(validation_alias="v")
+    time: datetime = Field(validation_alias="t")
+
+
+class TickerState(FinnhubBaseModel):
+    symbol: str = Field(max_length=5)
+    open_price: float = 0.0
+    last_price: float = 0.0
+    volume: int = 0
+    trade_count: int = 0

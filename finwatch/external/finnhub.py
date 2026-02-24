@@ -3,9 +3,16 @@ from typing import Any
 
 import websockets
 from httpx import Client
+from rich.live import Live
 
 from finwatch.config import settings
-from finwatch.models import ExchangeCode, LookupSymbol, MarketStatus, Quote
+from finwatch.external.utils import (
+    handle_trades,
+    subscribe_to_symbols,
+    update_state,
+)
+from finwatch.models import ExchangeCode, LookupSymbol, MarketStatus, Quote, TickerState
+from finwatch.ui import render_trade_states
 
 # TODO: Handle validation and request errors properly
 # TODO: Cache requests that do not change in result
@@ -43,18 +50,24 @@ def get_symbol_quote(*, ticker_symbol: str) -> Quote:
     return Quote.model_validate(result)
 
 
-async def get_trades_with_ws(*, ticker_symbol: str):
+async def get_trades_with_ws(*, symbols: list[str]):
     "Get real-time price changes using websockets"
+    states = {symbol: TickerState(symbol=symbol) for symbol in symbols}
+
     async with websockets.connect(
         f"{settings.FINNHUB_TRADES_WS}?token={settings.FINNHUB_API_KEY}"
     ) as ws:
-        message = {"type": "subscribe", "symbol": ticker_symbol}
-        await ws.send(json.dumps(message))
+        await subscribe_to_symbols(symbols, ws=ws)
 
         try:
-            while True:
-                message = await ws.recv()
-                data = json.loads(message)
-                print(data)
+            with Live(render_trade_states(states), refresh_per_second=10) as live:
+                while True:
+                    message = await ws.recv()
+                    trades = handle_trades(json.loads(message))
+                    if trades is None:
+                        continue
+                    for trade in trades:
+                        update_state(states[trade.symbol], trade)
+                live.update(render_trade_states(states))
         except websockets.ConnectionClosed:
             print("Connection closed")
