@@ -68,6 +68,6 @@ async def get_trades_with_ws(*, symbols: list[str]):
                         continue
                     for trade in trades:
                         update_state(states[trade.symbol], trade)
-                live.update(render_trade_states(states))
+                    live.update(render_trade_states(states))
         except websockets.ConnectionClosed:
             print("Connection closed")
